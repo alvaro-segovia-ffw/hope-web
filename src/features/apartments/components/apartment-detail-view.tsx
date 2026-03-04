@@ -83,7 +83,7 @@ function ApartmentVisualDetail({ apartment, locale }: { apartment: Apartment; lo
         <InfoCard label={t("detail.warmRent")} value={formatMoney(canonical.rent?.warmRent, canonical.rent?.currency, locale)} />
         <InfoCard label={t("detail.coldRent")} value={formatMoney(canonical.rent?.coldRent, canonical.rent?.currency, locale)} />
         <InfoCard label={t("detail.rooms")} value={toText(canonical.roomsTotal)} />
-        <InfoCard label={t("detail.area")} value={canonical.areaSqft ? `${canonical.areaSqft} sqft` : "-"} />
+        <InfoCard label={t("detail.area")} value={formatArea(canonical.areaSqft, canonical.areaSqm, t)} />
         <InfoCard label={t("detail.bedrooms")} value={toText(canonical.bedrooms)} />
         <InfoCard label={t("detail.bathrooms")} value={toText(canonical.bathrooms)} />
         <InfoCard label={t("detail.deposit")} value={toText(canonical.deposit)} />
@@ -152,6 +152,7 @@ function getCanonical(apartment: Apartment) {
       name?: unknown;
       roomsTotal?: unknown;
       areaSqft?: unknown;
+      areaSqm?: unknown;
       bedrooms?: unknown;
       bathrooms?: unknown;
       deposit?: unknown;
@@ -169,6 +170,7 @@ function getCanonical(apartment: Apartment) {
     name?: unknown;
     roomsTotal?: unknown;
     areaSqft?: unknown;
+    areaSqm?: unknown;
     bedrooms?: unknown;
     bathrooms?: unknown;
     deposit?: unknown;
@@ -268,4 +270,22 @@ function formatAvailability(
   }
 
   return `${from ?? "?"} - ${until ?? t("detail.availabilityOpen")}`;
+}
+
+function formatArea(
+  areaSqft: unknown,
+  areaSqm: unknown,
+  t: (key: string, params?: Record<string, string | number>) => string,
+): string {
+  const parts: string[] = [];
+
+  if (areaSqft !== undefined && areaSqft !== null) {
+    parts.push(t("detail.areaSqft", { count: String(areaSqft) }));
+  }
+
+  if (areaSqm !== undefined && areaSqm !== null) {
+    parts.push(t("detail.areaSqm", { count: String(areaSqm) }));
+  }
+
+  return parts.length > 0 ? parts.join(" / ") : "-";
 }

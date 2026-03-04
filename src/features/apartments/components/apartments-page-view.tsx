@@ -521,7 +521,11 @@ function getApartmentMeta(apartment: Apartment, t: TFunction): string[] {
   }
 
   if (canonical.areaSqft !== undefined && canonical.areaSqft !== null) {
-    tags.push(t("apartments.metaArea", { count: String(canonical.areaSqft) }));
+    tags.push(t("apartments.metaAreaSqft", { count: String(canonical.areaSqft) }));
+  }
+
+  if (canonical.areaSqm !== undefined && canonical.areaSqm !== null) {
+    tags.push(t("apartments.metaAreaSqm", { count: String(canonical.areaSqm) }));
   }
 
   return tags;
@@ -539,6 +543,7 @@ function getCanonical(apartment: Apartment) {
       bedrooms?: unknown;
       bathrooms?: unknown;
       areaSqft?: unknown;
+      areaSqm?: unknown;
       rent?: { warmRent?: number; currency?: string };
       address?: { streetName?: unknown; buildingNumber?: unknown; zipCode?: unknown; city?: unknown };
     };
@@ -552,6 +557,7 @@ function getCanonical(apartment: Apartment) {
     bedrooms?: unknown;
     bathrooms?: unknown;
     areaSqft?: unknown;
+    areaSqm?: unknown;
     rent?: { warmRent?: number; currency?: string };
     address?: { streetName?: unknown; buildingNumber?: unknown; zipCode?: unknown; city?: unknown };
   };

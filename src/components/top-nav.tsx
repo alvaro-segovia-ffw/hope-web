@@ -22,7 +22,7 @@ export function TopNav() {
             <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg border border-[#d8cfbc] bg-[#f4efe4]">
               <Image src="/image.png" alt="Hope Apartments logo" width={36} height={36} />
             </span>
-            <span className="font-['Avenir_Next'] text-lg font-semibold tracking-tight text-[#2f2a20]">
+            <span className="text-lg font-semibold tracking-tight text-[#2f2a20]">
               {t("nav.brand")}
             </span>
           </Link>
