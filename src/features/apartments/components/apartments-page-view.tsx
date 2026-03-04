@@ -6,8 +6,10 @@ import { useMemo, useState } from "react";
 import { ErrorPanel } from "@/components/error-panel";
 import {
   useApartmentsGlobalSearchQuery,
+  useApartmentsTotalCountQuery,
   useApartmentsQuery,
 } from "@/features/apartments/api/queries";
+import { type ApartmentsSource } from "@/features/apartments/api/apartments-api";
 import { type Apartment } from "@/features/apartments/api/schemas";
 import { useI18n } from "@/features/i18n/i18n-context";
 
@@ -32,15 +34,24 @@ const SORT_OPTIONS: Array<{ value: SortOption; labelKey: string }> = [
   { value: "rentAsc", labelKey: "apartments.sort.rentAsc" },
 ];
 
+const APARTMENTS_SOURCE_OPTIONS: Array<{ value: ApartmentsSource; labelKey: string }> = [
+  { value: "all", labelKey: "apartments.source.all" },
+  { value: "availableForRent", labelKey: "apartments.source.availableForRent" },
+];
+
 export function ApartmentsPageView() {
   const { t, locale } = useI18n();
   const [page, setPage] = useState(1);
   const [searchExternalId, setSearchExternalId] = useState("");
+  const [source, setSource] = useState<ApartmentsSource>("all");
   const [sortBy, setSortBy] = useState<SortOption>("externalIdAsc");
-  const apartmentsQuery = useApartmentsQuery(page, PER_PAGE);
-  const globalSearchQuery = useApartmentsGlobalSearchQuery(searchExternalId);
-
   const isGlobalSearch = searchExternalId.trim().length > 0;
+  const apartmentsQuery = useApartmentsQuery(page, PER_PAGE, source);
+  const globalSearchQuery = useApartmentsGlobalSearchQuery(searchExternalId, source);
+  const apartmentsTotalCountQuery = useApartmentsTotalCountQuery(
+    source,
+    !isGlobalSearch && typeof apartmentsQuery.data?.total !== "number",
+  );
 
   const sourceItems = isGlobalSearch
     ? globalSearchQuery.data ?? []
@@ -57,6 +68,9 @@ export function ApartmentsPageView() {
     : apartmentsQuery.data?.total
       ? Math.max(1, Math.ceil(apartmentsQuery.data.total / PER_PAGE))
       : undefined;
+  const totalReturned = isGlobalSearch
+    ? sortedItems.length
+    : apartmentsQuery.data?.total ?? apartmentsTotalCountQuery.data ?? 0;
 
   const canGoPrev = page > 1;
   const canGoNext = totalPages
@@ -111,7 +125,7 @@ export function ApartmentsPageView() {
             <p className="muted mt-2 text-sm">{t("apartments.subtitle")}</p>
           </div>
 
-          <div className="grid w-full gap-3 sm:grid-cols-2 lg:w-auto">
+          <div className="grid w-full gap-3 sm:grid-cols-2 lg:w-auto lg:grid-cols-3">
             <div>
               <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500" htmlFor="searchExternalId">
                 {t("apartments.searchLabel")}
@@ -127,6 +141,27 @@ export function ApartmentsPageView() {
                 }}
                 className="field min-w-52"
               />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500" htmlFor="apartmentsSource">
+                {t("apartments.sourceLabel")}
+              </label>
+              <select
+                id="apartmentsSource"
+                value={source}
+                onChange={(event) => {
+                  setSource(event.target.value as ApartmentsSource);
+                  setPage(1);
+                }}
+                className="field min-w-52"
+              >
+                {APARTMENTS_SOURCE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {t(option.labelKey)}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
@@ -158,17 +193,22 @@ export function ApartmentsPageView() {
         {hasError && errorState ? <ErrorPanel error={errorState} /> : null}
 
         {isSuccess ? (
-          <p className="muted mb-4 text-sm">
-            {t("apartments.results", {
-              count: currentPageItems.length,
-              page,
-              tail: isGlobalSearch
-                ? t("apartments.resultsTailGlobal", { total: sortedItems.length })
-                : apartmentsQuery.data?.total
-                  ? t("apartments.resultsTailTotal", { total: apartmentsQuery.data.total })
-                  : "",
-            })}
-          </p>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <p className="muted text-sm">
+              {t("apartments.results", {
+                count: currentPageItems.length,
+                page,
+                tail: isGlobalSearch
+                  ? t("apartments.resultsTailGlobal", { total: sortedItems.length })
+                  : apartmentsQuery.data?.total
+                    ? t("apartments.resultsTailTotal", { total: apartmentsQuery.data.total })
+                    : "",
+              })}
+            </p>
+            <p className="text-sm font-semibold text-slate-700">
+              {t("apartments.totalReturned", { total: totalReturned })}
+            </p>
+          </div>
         ) : null}
 
         {isSuccess && sortedItems.length === 0 ? (

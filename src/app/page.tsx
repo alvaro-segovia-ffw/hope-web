@@ -25,6 +25,9 @@ export default function HomePage() {
               <Link href="/apartments" className="btn-primary">
                 {t("home.publicCta")}
               </Link>
+              <Link href="/partner" className="btn-secondary">
+                {t("home.partnerCta")}
+              </Link>
               <Link href="/admin" className="btn-secondary">
                 {t("home.internalCta")}
               </Link>
@@ -35,6 +38,10 @@ export default function HomePage() {
             <div className="surface border-slate-200/90 bg-white/80">
               <p className="eyebrow">{t("home.public")}</p>
               <p className="mt-2 text-xl font-semibold text-slate-900">{t("home.publicTitle")}</p>
+            </div>
+            <div className="surface border-slate-200/90 bg-white/80">
+              <p className="eyebrow">{t("home.partner")}</p>
+              <p className="mt-2 text-xl font-semibold text-slate-900">{t("home.partnerTitle")}</p>
             </div>
             <div className="surface border-slate-200/90 bg-white/80">
               <p className="eyebrow">{t("home.internal")}</p>

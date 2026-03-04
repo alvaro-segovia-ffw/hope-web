@@ -12,6 +12,7 @@ export function TopNav() {
   const { isAuthenticated, hasRole } = useAuth();
   const { t } = useI18n();
   const isAdmin = isAuthenticated && hasRole("admin");
+  const isPartner = isAuthenticated && (hasRole("partner") || hasRole("admin"));
 
   return (
     <header className="sticky top-0 z-40 border-b border-[#d8cfbc]/80 bg-white/88 backdrop-blur-xl">
@@ -29,6 +30,14 @@ export function TopNav() {
           <nav className="flex items-center gap-2 rounded-xl border border-[#d9d0be] bg-[#f6f1e7]/90 p-1 text-sm text-[#59564c]">
             <Link href="/apartments" className="rounded-lg px-3 py-1.5 transition hover:bg-white hover:text-[#2f2a20]">
               {t("nav.apartments")}
+            </Link>
+            <Link
+              href="/partner"
+              className={`rounded-lg px-3 py-1.5 transition hover:bg-white hover:text-[#2f2a20] ${
+                isPartner ? "" : "opacity-70"
+              }`}
+            >
+              {t("nav.partner")}
             </Link>
             <Link
               href="/admin"

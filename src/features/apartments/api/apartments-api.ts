@@ -8,13 +8,27 @@ import {
   type ApartmentsPageResult,
 } from "./schemas";
 
-export async function getApartments(page: number, perPage: number): Promise<ApartmentsPageResult> {
+export type ApartmentsSource = "all" | "availableForRent";
+
+function getApartmentsPath(source: ApartmentsSource): string {
+  if (source === "availableForRent") {
+    return "/api/v1/apartments/available-for-rent";
+  }
+
+  return "/api/v1/apartments";
+}
+
+export async function getApartments(
+  page: number,
+  perPage: number,
+  source: ApartmentsSource = "all",
+): Promise<ApartmentsPageResult> {
   const params = new URLSearchParams({
     page: String(page),
     perPage: String(perPage),
   });
 
-  const response = await apiRequest<unknown>(`/api/v1/apartments?${params.toString()}`);
+  const response = await apiRequest<unknown>(`${getApartmentsPath(source)}?${params.toString()}`);
   const parsed = apartmentsResponseSchema.parse(response);
 
   if (Array.isArray(parsed)) {
@@ -33,14 +47,14 @@ export async function getApartments(page: number, perPage: number): Promise<Apar
   };
 }
 
-export async function getAllApartments(): Promise<Apartment[]> {
+async function getAllApartmentsInternal(source: ApartmentsSource): Promise<Apartment[]> {
   const perPage = 100;
   const maxPages = 100;
   let page = 1;
   const collected: Apartment[] = [];
 
   while (page <= maxPages) {
-    const response = await getApartments(page, perPage);
+    const response = await getApartments(page, perPage, source);
     collected.push(...response.items);
 
     const reachedEndBySize = response.items.length < perPage;
@@ -60,6 +74,14 @@ export async function getAllApartments(): Promise<Apartment[]> {
   }
 
   return [...uniqueByExternalId.values()];
+}
+
+export async function getAllApartments(): Promise<Apartment[]> {
+  return getAllApartmentsInternal("all");
+}
+
+export async function getAllApartmentsBySource(source: ApartmentsSource): Promise<Apartment[]> {
+  return getAllApartmentsInternal(source);
 }
 
 export async function getApartmentByExternalId(externalId: string): Promise<Apartment> {

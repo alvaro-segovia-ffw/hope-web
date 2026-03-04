@@ -1,11 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { getAllApartments, getApartmentByExternalId, getApartments } from "./apartments-api";
+import {
+  getAllApartmentsBySource,
+  getApartmentByExternalId,
+  getApartments,
+  type ApartmentsSource,
+} from "./apartments-api";
 
-export function useApartmentsQuery(page: number, perPage: number) {
+export function useApartmentsQuery(
+  page: number,
+  perPage: number,
+  source: ApartmentsSource = "all",
+) {
   return useQuery({
-    queryKey: ["apartments", page, perPage],
-    queryFn: () => getApartments(page, perPage),
+    queryKey: ["apartments", source, page, perPage],
+    queryFn: () => getApartments(page, perPage, source),
     staleTime: 30_000,
   });
 }
@@ -20,18 +29,36 @@ export function useApartmentDetailQuery(externalId?: string) {
   });
 }
 
-export function useApartmentsGlobalSearchQuery(searchExternalId: string) {
+export function useApartmentsGlobalSearchQuery(
+  searchExternalId: string,
+  source: ApartmentsSource = "all",
+) {
   const normalizedSearchTerm = searchExternalId.trim().toLowerCase();
 
   return useQuery({
-    queryKey: ["apartments", "global-search", normalizedSearchTerm],
+    queryKey: ["apartments", source, "global-search", normalizedSearchTerm],
     queryFn: async () => {
-      const apartments = await getAllApartments();
+      const apartments = await getAllApartmentsBySource(source);
       return apartments.filter((apartment) =>
         apartment.externalId.toLowerCase().includes(normalizedSearchTerm),
       );
     },
     enabled: normalizedSearchTerm.length > 0,
+    staleTime: 30_000,
+  });
+}
+
+export function useApartmentsTotalCountQuery(
+  source: ApartmentsSource = "all",
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: ["apartments", source, "total-count"],
+    queryFn: async () => {
+      const apartments = await getAllApartmentsBySource(source);
+      return apartments.length;
+    },
+    enabled,
     staleTime: 30_000,
   });
 }
